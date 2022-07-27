@@ -1,0 +1,62 @@
+#modules
+import imaplib
+import email
+import os
+import pandas
+#credentials
+username = 
+#generated app password
+app_password= ''
+# https://www.systoolsgroup.com/imap/
+gmail_host= 'imap.gmail.com'
+#set connection
+mail = imaplib.IMAP4_SSL(gmail_host)
+#login
+mail.login(username, app_password)
+#select inbox
+mail.select("BNPP")
+#select specific mails
+_, selected_mails = mail.search(None, '(SUBJECT "")')
+#total number of mails from specific user
+print("Total Amount of Messages Fetched From Search Criteria:" , len(selected_mails[0].split()))
+#functions to save xlsx files only
+def save_attachment(self, msg, download_folder="/tmp"):
+        """
+        Given a message, save its attachments to the specified
+        download folder (default is /tmp)
+        return: file path to attachment
+        """
+        att_path = "No attachment found."
+        for part in msg.walk():
+            if part.get_content_maintype() == 'multipart':
+                continue
+            if part.get('Content-Disposition') is None:
+                continue
+            excel=".xlsx"
+            filename = part.get_filename()
+            while excel in filename:
+                att_path = os.path.join(download_folder, filename)
+                if not os.path.isfile(att_path):
+                    fp = open(att_path, 'wb')
+                    fp.write(part.get_payload(decode=True))
+                    fp.close()
+                return att_path
+for num in selected_mails[0].split():
+    _, data = mail.fetch(num , '(RFC822)')
+    _, bytes_data = data[0]
+    #convert the byte data to message
+    email_message = email.message_from_bytes(bytes_data)
+    print("\n===========================================")
+    #access data
+    print("Subject: ",email_message["subject"])
+    print("To:", email_message["to"])
+    print("From: ",email_message["from"])
+    print("Date: ",email_message["date"])
+    for part in email_message.walk():
+        if part.get_content_type()=="text/plain" or part.get_content_type()=="text/html":
+            message = part.get_payload(decode=True)
+            print("Message: \n", message.decode())
+            print("\n==========================================\n")
+            break
+    save_attachment((),email_message,download_folder=#foldername
+
